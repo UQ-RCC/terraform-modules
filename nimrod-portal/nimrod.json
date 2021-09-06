@@ -1,0 +1,158 @@
+[
+  ["Nimrod"],
+  {
+    "Nimrod": {
+      "loginHost": null,
+      "username": null,
+      "messageRegexs": [
+        {
+          "pattern": "^INFO:(?P<info>.*(?:\n|\r\n?))"
+        },
+        {
+          "pattern": "^WARN:(?P<warn>.*(?:\n|\r\n?))"
+        },
+        {
+          "pattern": "^ERROR:(?P<error>.*(?:\n|\r\n?))"
+        }
+      ],
+      "Commands": {
+        "listFolderBase64": {
+          "async": true,
+          "exec": {
+            "command": ["/sw7/RCC/NimrodG/portal-utils/listFolderBase64.py"],
+            "args": ["folderpath"]
+          },
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [
+            "(?P<permission>[^ ]+) +(?P<links>[0-9]+) +(?P<owner>[^ ]+) +(?P<group>[^ ]+) +(?P<size>[^ ]+) +(?P<modm>[^ ]+) +(?P<modd>[0-9]+) +(?P<modh>[^ ]+) +(?P<name>.*)"
+          ],
+          "requireMatch": true
+        },
+        "getProjects": {
+          "async": false,
+          "exec": {
+            "command": ["/sw7/RCC/NimrodG/portal-utils/getProjects.py"],
+            "args": []
+          },
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": ["^\\s*(?P<group>\\S+)\\s*$"],
+          "requireMatch": true
+        },
+        "accessibleLocations": {
+          "async": false,
+          "exec": {
+            "command": ["/sw7/RCC/NimrodG/portal-utils/accessibleLocations.py"],
+            "args": []
+          },
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": ["^\\s*(?P<path>\\S+)\\s*$"],
+          "requireMatch": true
+        },
+        "deleteBase64": {
+          "async": false,
+          "cmd": "echo {fileslist} | base64 --decode | tr ';' '\n' | xargs -d '\n' rm -rf",
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [null],
+          "requireMatch": false
+        },
+        "copyBase64": {
+          "async": false,
+          "cmd_old": "sbatch --mem=10G --mail-user={usermail} --mail-type=END -N1 -n1 -c8 -J portal_copy /clusterdata/uqhngu36/portal-data/scripts/folder_copy.sh {sources} {dest} {parallel}",
+          "exec": {
+            "command": ["/sw7/RCC/NimrodG/portal-utils/copyBase64.py"],
+            "args": ["usermail", "sources", "dest", "parallel"]
+          },
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [null],
+          "requireMatch": false
+        },
+        "moveBase64": {
+          "async": false,
+          "cmd": "SRCDIR=\"$(echo {sources} | base64 --decode)\"; DESTDIR=\"$(echo {dest} | base64 --decode)\"; rsync -zr -f'+ */' -f'- *' $SRCDIR/ $DESTDIR/; cd $SRCDIR  &&  find . ! -type d -print0 | xargs -0 -n1 -P{parallel} -I% cp % $DESTDIR/%; rm -rf $SRCDIR",
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [null],
+          "requireMatch": false
+        },
+        "listCopying": {
+          "async": false,
+          "cmd": "squeue -u $(whoami) -o \\\"%j %i %u %T\\\" | tail -n+2 | grep portal_copy || true ",
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [
+            "(?P<jobname>.*) (?P<jobid>.*) (?P<username>.*) (?P<status>.*)$"
+          ],
+          "requireMatch": false
+        },
+        "startExperiment": {
+          "async": false,
+          "exec": {
+            "command": ["/sw7/RCC/NimrodG/portal-utils/startExperiment.py"],
+            "args": ["account", "exp_name"]
+          },
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [null],
+          "requireMatch": false
+        },
+	"stopExperiment": {
+          "async": false,
+	  "cmd": "/opt/pbs/bin/qdel `cat /home/$(whoami)/.config/nimrod-portal/jobid`",
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [null],
+          "requireMatch": false
+        },
+        "checkProcess": {
+          "async": false,
+          "exec": {
+            "command": ["/sw7/RCC/NimrodG/portal-utils/checkProcess.py"],
+            "args": []
+          },
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": ["^(?P<jobid>[^,]+),(?P<status>\\w+),(?P<return>\\d+)$"],
+          "requireMatch": true
+        },
+        "setUserConfiguration": {
+          "async": false,
+          "exec": {
+            "command": ["/sw7/RCC/NimrodG/portal-utils/setUserConfiguration.py"],
+            "args": ["config"]
+          },
+          "failFatal": true,
+          "formatFatal": false,
+          "host": "login",
+          "loop": false,
+          "regex": [null],
+          "requireMatch": false
+        }
+      }
+    }
+  }
+]
