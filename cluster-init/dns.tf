@@ -115,5 +115,6 @@ resource "helm_release" "external-dns" {
       tsigSecretAlg = var.dns_tsig_algorithm
       minTTL        = "3600s"
     }
+    domainFilters = [var.dns_zone]
   })]
 }
