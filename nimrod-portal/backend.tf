@@ -5,6 +5,7 @@ module "backend" {
 
   app                   = "nimrod-portal-backend"
   context_path          = "/nimrod"
+  image                 = var.backend_image
 
   allowed_cors_patterns = local.frontend_cors
 

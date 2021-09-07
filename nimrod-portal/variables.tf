@@ -21,6 +21,11 @@ variable "frontend_image" {
   description = "nimrod-portal frontend docker image"
 }
 
+variable "backend_image" {
+  default     = "uqrcc/nimrod-portal-backend:1.13.1"
+  description = "nimrod-portal-backend docker image"
+}
+
 variable "rs_jwt_config" {
   default = {
     audience-id   = "web-client"
