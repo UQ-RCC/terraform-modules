@@ -39,3 +39,13 @@ variable "service_annotations" {
   default = {}
   type    = object({})
 }
+
+variable "tls_enable" {
+  default = false
+  type    = bool
+}
+
+variable "tls_secret_name" {
+  default = null
+  type    = string
+}

@@ -94,6 +94,12 @@ resource "kubernetes_deployment" "postgres-db" {
           image_pull_policy = "IfNotPresent"
           name              = "postgres"
 
+          args = var.tls_enable ? [
+            "-c", "ssl=on",
+            "-c", "ssl_cert_file=/tls/tls.crt",
+            "-c", "ssl_key_file=/tls/tls.key",
+          ] : []
+
           env {
             name  = "POSTGRES_PASSWORD"
             value_from {
@@ -122,6 +128,15 @@ resource "kubernetes_deployment" "postgres-db" {
             read_only  = true
           }
 
+          dynamic "volume_mount" {
+            for_each = var.tls_enable ? [0] : []
+            content {
+              name       = "${var.app_label}-tls"
+              mount_path = "/tls"
+              read_only  = true
+            }
+          }
+
           liveness_probe {
             exec {
               command = [ "/usr/local/bin/psql", "-U", "postgres", "postgres", "-c", "SELECT 1" ]
@@ -141,6 +156,17 @@ resource "kubernetes_deployment" "postgres-db" {
           name = "${var.app_label}-config"
           secret {
             secret_name = kubernetes_secret.config.metadata.0.name
+          }
+        }
+
+        dynamic "volume" {
+          for_each = var.tls_enable ? [var.tls_secret_name] : []
+          content {
+            name = "${var.app_label}-tls"
+            secret {
+              secret_name  = var.tls_secret_name
+              default_mode = "0600"
+            }
           }
         }
       }
