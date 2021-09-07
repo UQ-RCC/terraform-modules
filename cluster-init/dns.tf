@@ -37,60 +37,72 @@ resource "helm_release" "cert-manager" {
 
 resource "kubectl_manifest" "acme_issuer_staging" {
   depends_on = [helm_release.cert-manager]
-  yaml_body = <<YAML
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-staging
-  namespace: kube-system
-spec:
-  acme:
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: ${var.acme_email}
-    privateKeySecretRef:
-      name: letsencrypt-staging
-    solvers:
-    - selector:
-        dnsZones:
-          - ${var.dns_zone}
-      dns01:
-        rfc2136:
-          nameserver: ${var.dns_server}
-          tsigKeyName: ${var.dns_tsig_key_name}
-          tsigAlgorithm: ${upper(replace(var.dns_tsig_algorithm, "-", ""))}
-          tsigSecretSecretRef:
-            name: ${kubernetes_secret.dns-update-key.metadata.0.name}
-            key: ${local.dns_key_name}
-YAML
+  yaml_body = yamlencode({
+    apiVersion = "cert-manager.io/v1"
+    kind       = "ClusterIssuer"
+    metadata   = {
+      name      = "letsencrypt-staging"
+      namespace = "kube-system"
+    }
+    spec = {
+      acme = {
+        server = "https://acme-staging-v02.api.letsencrypt.org/directory"
+        email  = var.acme_email
+        privateKeySecretRef = { name = "letsencrypt-staging" }
+        solvers = [{
+          selector = {
+            dnsZones = [ var.dns_zone ]
+          }
+          dns01 = {
+            rfc2136 = {
+              nameserver    = var.dns_server
+              tsigKeyName   = var.dns_tsig_key_name
+              tsigAlgorithm = upper(replace(var.dns_tsig_algorithm, "-", ""))
+              tsigSecretSecretRef = {
+                name = kubernetes_secret.dns-update-key.metadata.0.name
+                key  = local.dns_key_name
+              }
+            }
+          }
+        }]
+      }
+    }
+  })
 }
 
 resource "kubectl_manifest" "acme_issuer_prod" {
   depends_on = [helm_release.cert-manager]
-  yaml_body = <<YAML
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-  namespace: kube-system
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: ${var.acme_email}
-    privateKeySecretRef:
-      name: letsencrypt
-    solvers:
-    - selector:
-        dnsZones:
-          - ${var.dns_zone}
-      dns01:
-        rfc2136:
-          nameserver: ${var.dns_server}
-          tsigKeyName: ${var.dns_tsig_key_name}
-          tsigAlgorithm: ${upper(replace(var.dns_tsig_algorithm, "-", ""))}
-          tsigSecretSecretRef:
-            name: ${kubernetes_secret.dns-update-key.metadata.0.name}
-            key: ${local.dns_key_name}
-YAML
+  yaml_body = yamlencode({
+    apiVersion = "cert-manager.io/v1"
+    kind       = "ClusterIssuer"
+    metadata   = {
+      name      = "letsencrypt-prod"
+      namespace = "kube-system"
+    }
+    spec = {
+      acme = {
+        server = "https://acme-v02.api.letsencrypt.org/directory"
+        email  = var.acme_email
+        privateKeySecretRef = { name = "letsencrypt" }
+        solvers = [{
+          selector = {
+            dnsZones = [ var.dns_zone ]
+          }
+          dns01 = {
+            rfc2136 = {
+              nameserver    = var.dns_server
+              tsigKeyName   = var.dns_tsig_key_name
+              tsigAlgorithm = upper(replace(var.dns_tsig_algorithm, "-", ""))
+              tsigSecretSecretRef = {
+                name = kubernetes_secret.dns-update-key.metadata.0.name
+                key  = local.dns_key_name
+              }
+            }
+          }
+        }]
+      }
+    }
+  })
 }
 
 ##
