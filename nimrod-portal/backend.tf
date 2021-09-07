@@ -57,7 +57,8 @@ module "backend" {
       }
 
       amqp = {
-        cert = ""
+        # Location of the CA store on the HPC
+        cert           = var.master_ca_store
         no_verify_host = false
         no_verify_peer = false
         routing_key    = "nimrod_portal"
@@ -66,7 +67,7 @@ module "backend" {
       }
 
       transfer = {
-        cert           = ""
+        cert           = var.master_ca_store
         no_verify_host = false
         no_verify_peer = false
         uri            = "file:///QRISdata/"

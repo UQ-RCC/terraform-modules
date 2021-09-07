@@ -120,3 +120,10 @@ Spring Security oauth2 configuration.
 This is the spring.auth.oauth2.client configuration key
 EOF
 }
+
+variable "master_ca_store" {
+  # On Tinaroo, Awoonga, FlashLite, i.e. CentOS 7
+  default     = "/etc/ssl/certs/ca-bundle.crt"
+  type        = string
+  description = "Location of the CA store for the Nimrod Master to use"
+}
