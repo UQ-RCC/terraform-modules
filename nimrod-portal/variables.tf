@@ -68,6 +68,15 @@ variable "amqp_domain" {
   description = "Domain name RabbitMQ runs under"
 }
 
+variable "db_domain" {
+  type = object({
+    domain      = string
+    issuer_name = string
+    issuer_kind = string
+  })
+  description = "Domain name Postgres runs under"
+}
+
 variable "rabbitmq_clustersize" {
   default = 1
   description = "RabbitMQ cluster size, cannot be decreased later."

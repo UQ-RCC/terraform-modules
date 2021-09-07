@@ -31,17 +31,12 @@ module "backend" {
 
     remote = {
       ##
-      # NB: These are from the POV of the master, which is running in the
-      #     same cluster. Internal names are fine.
+      # NB: These are from the POV of the master, which currently runs external to the cluster.
+      # When that's changed, change these to use internal addresses.
       ##
-      postgres_uritemplate = "postgresql://{pg_host}/nimrod_portal?currentSchema={username}"
-
-      # Have to use the external endpoint because TLS only
+      postgres_uritemplate = "postgresql://${var.db_domain.domain}/nimrod_portal?currentSchema={username}&ssl=true"
       rabbit_uritemplate   = "amqps://{username}:{amqp_password}@${var.amqp_domain.domain}/username"
-      vars = {
-        amqp_host = "amqp.${var.namespace}.svc"
-        pg_host   = "${module.portal-db.service_name}.${var.namespace}.svc"
-      }
+      vars = {}
     }
 
     resource = {

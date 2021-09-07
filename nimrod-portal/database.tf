@@ -8,6 +8,26 @@ resource "random_password" "backend-password" {
   special = false
 }
 
+resource "kubectl_manifest" "db_certificate" {
+  yaml_body = yamlencode({
+    apiVersion = "cert-manager.io/v1"
+    kind       = "Certificate"
+    metadata   = {
+      name      = "db-certificate"
+      namespace = var.namespace
+    }
+
+    spec = {
+      secretName = "db-certificate"
+      issuerRef = {
+        name = var.db_domain.issuer_name
+        kind = var.db_domain.issuer_kind
+      }
+      dnsNames = [ var.db_domain.domain ]
+    }
+  })
+}
+
 module "portal-db" {
   source = "../postgres"
 
@@ -15,6 +35,14 @@ module "portal-db" {
   volume_size = "1Gi"
   password    = var.db_root_password
   app_label   = "portal-db"
+
+  service_type = "LoadBalancer"
+  service_annotations = {
+    "external-dns.alpha.kubernetes.io/hostname" = var.db_domain.domain
+  }
+
+  tls_enable      = true
+  tls_secret_name = "db-certificate"
 
   ensure_users = {
     nimrod_portal = {
