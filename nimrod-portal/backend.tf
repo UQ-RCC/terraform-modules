@@ -1,3 +1,8 @@
+resource "random_password" "rabbitmq_backend_password" {
+  length  = 64
+  special = false
+}
+
 module "backend" {
   source = "../nimrod-portal-backend"
 
@@ -27,7 +32,7 @@ module "backend" {
       # Have to use the external endpoint because TLS only
       api      = "https://${var.amqp_domain.domain}:15671"
       user     = "nimrod_portal"
-      password = "meatloaf"
+      password = random_password.rabbitmq_backend_password.result
     }
 
     remote = {
