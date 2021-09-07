@@ -3,7 +3,7 @@ variable "namespace" {
 }
 
 variable "image" {
-  default     = "uqrcc/nimrod-portal-backend:1.13.0"
+  default     = "uqrcc/nimrod-portal-backend:1.13.1"
   description = "nimrod-portal-backend docker image"
 }
 
