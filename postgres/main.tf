@@ -104,8 +104,13 @@ resource "kubernetes_deployment" "postgres-db" {
             }
           }
 
+          env {
+            name  = "PGDATA"
+            value = "/var/lib/postgresql/data/pgdata"
+          }
+
           volume_mount {
-            mount_path = "/var/lib/postgresql"
+            mount_path = "/var/lib/postgresql/data"
             name       = "${var.app_label}-db-data"
             read_only  = false
           }
