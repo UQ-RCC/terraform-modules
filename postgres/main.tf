@@ -146,8 +146,9 @@ resource "kubernetes_deployment" "postgres-db" {
 
 resource "kubernetes_service" "postgres-db" {
   metadata {
-    name      = var.app_label
-    namespace = var.namespace
+    name        = var.app_label
+    namespace   = var.namespace
+    annotations = var.service_annotations
   }
 
   spec {
@@ -159,8 +160,7 @@ resource "kubernetes_service" "postgres-db" {
     # NB: Change this to "None" when running on something that
     #     supports network policies.
     ##
-    type = "ClusterIP"
-    cluster_ip = "None"
+    type = var.service_type
     port {
       port        = 5432
       target_port = 5432

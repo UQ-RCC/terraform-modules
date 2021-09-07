@@ -29,3 +29,13 @@ variable "ensure_databases" {
   default     = {}
   description = "Ensure these databases exist"
 }
+
+variable "service_type" {
+  default = "ClusterIP"
+  type    = string
+}
+
+variable "service_annotations" {
+  default = {}
+  type    = object({})
+}
