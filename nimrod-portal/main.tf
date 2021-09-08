@@ -24,11 +24,11 @@ resource "kubectl_manifest" "portal_api_certificate" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
     metadata = {
-      name      = "portal-api-certificate"
+      name      = "${var.app}-api-certificate"
       namespace = var.namespace
     }
     spec = {
-      secretName = "portal-api-certificate"
+      secretName = "${var.app}-api-certificate"
       issuerRef  = {
         name = var.api_domain.issuer_name
         kind = var.api_domain.issuer_kind
@@ -45,12 +45,12 @@ resource "kubectl_manifest" "frontend_certificates" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
     metadata = {
-      name      = "${each.value.domain}-certificate"
+      name      = "${var.app}-${each.value.domain}-certificate"
       namespace = var.namespace
     }
 
     spec = {
-      secretName = "${each.value.domain}-certificate"
+      secretName = "${var.app}-${each.value.domain}-certificate"
       issuerRef = {
         name = each.value.issuer_name
         kind = each.value.issuer_kind
@@ -63,7 +63,7 @@ resource "kubectl_manifest" "frontend_certificates" {
 resource "kubernetes_ingress" "ingress" {
   wait_for_load_balancer = false
   metadata {
-    name      = "nimrod-portal-ingress"
+    name      = "${var.app}-ingress"
     namespace = var.namespace
     annotations = {
       "kubernetes.io/ingress.class"               = "nginx"

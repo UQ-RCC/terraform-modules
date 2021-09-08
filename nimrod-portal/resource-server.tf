@@ -2,7 +2,7 @@ module "resource-server" {
   source    = "../portal-resource-server"
 
   namespace   = var.namespace
-  app         = "resource-server"
+  app         = "${var.app}-resource-server"
   image       = var.rs_image
   endpoints   = file("${path.module}/nimrod.json")
   ca_key      = var.rs_key

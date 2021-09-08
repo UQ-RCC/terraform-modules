@@ -3,12 +3,12 @@ resource "kubectl_manifest" "rabbitmq_certificate" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
     metadata   = {
-      name      = "rabbitmq-certificate"
+      name      = "${var.app}-rabbitmq-certificate"
       namespace = var.namespace
     }
 
     spec = {
-      secretName = "rabbitmq-certificate"
+      secretName = "${var.app}-rabbitmq-certificate"
       issuerRef = {
         name = var.amqp_domain.issuer_name
         kind = var.amqp_domain.issuer_kind
@@ -24,7 +24,7 @@ resource "kubectl_manifest" "rabbitmq-cluster" {
     kind       = "RabbitmqCluster"
 
     metadata = {
-      name      = "rabbitmq"
+      name      = "${var.app}-rabbitmq"
       namespace = var.namespace
     }
 
@@ -39,7 +39,7 @@ resource "kubectl_manifest" "rabbitmq-cluster" {
         }
       }
       tls = {
-        secretName             = "rabbitmq-certificate"
+        secretName             = "${var.app}-rabbitmq-certificate"
         disableNonTLSListeners = true
       }
     }

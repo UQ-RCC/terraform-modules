@@ -15,7 +15,7 @@ EOF
 
 resource "kubernetes_config_map" "frontend_config" {
   metadata {
-    name      = "frontend-config"
+    name      = "${var.app}-frontend-config"
     namespace = var.namespace
   }
 
@@ -26,7 +26,7 @@ resource "kubernetes_config_map" "frontend_config" {
 
 resource "kubernetes_deployment" "frontend" {
   metadata {
-    name      = "frontend"
+    name      = "${var.app}-frontend"
     namespace = var.namespace
   }
 
@@ -35,7 +35,7 @@ resource "kubernetes_deployment" "frontend" {
   spec {
     selector {
       match_labels = {
-        app = "frontend"
+        app = "${var.app}-frontend"
       }
     }
 
@@ -46,7 +46,7 @@ resource "kubernetes_deployment" "frontend" {
     template {
       metadata {
         labels = {
-          app = "frontend"
+          app = "${var.app}-frontend"
         }
 
         annotations = {
@@ -63,7 +63,7 @@ resource "kubernetes_deployment" "frontend" {
         }
 
         volume {
-          name = "frontend-config"
+          name = "${var.app}-frontend-config"
           config_map {
             name = kubernetes_config_map.frontend_config.metadata[0].name
             items {
@@ -83,7 +83,7 @@ resource "kubernetes_deployment" "frontend" {
           }
 
           volume_mount {
-            name       = "frontend-config"
+            name       = "${var.app}-frontend-config"
             mount_path = "/share/nimrod-portal/env.js"
             sub_path   = "env.js"
           }
@@ -115,13 +115,13 @@ resource "kubernetes_deployment" "frontend" {
 
 resource "kubernetes_service" "frontend" {
   metadata {
-    name      = "frontend"
+    name      = "${var.app}-frontend"
     namespace = var.namespace
   }
 
   spec {
     selector = {
-      app = "frontend"
+      app = "${var.app}-frontend"
     }
     type             = "NodePort"
     session_affinity = "None"

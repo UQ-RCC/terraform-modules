@@ -34,7 +34,7 @@ module "portal-db" {
   namespace   = var.namespace
   volume_size = "1Gi"
   password    = var.db_root_password
-  app_label   = "portal-db"
+  app_label   = "${var.app}-db"
 
   service_type = "LoadBalancer"
   service_annotations = {

@@ -6,9 +6,9 @@ resource "random_password" "rabbitmq_backend_password" {
 module "backend" {
   source = "../nimrod-portal-backend"
 
-  namespace = "nimrod-portal"
+  namespace = var.namespace
 
-  app                   = "nimrod-portal-backend"
+  app                   = "${var.app}-backend"
   context_path          = "/nimrod"
   image                 = var.backend_image
 
@@ -20,7 +20,7 @@ module "backend" {
 
   jwt_config = var.rs_jwt_config
 
-  rabbitmq_secret_name = "rabbitmq-default-user"
+  rabbitmq_secret_name = "${var.app}-rabbitmq-default-user"
 
   replicas = var.replicas_backend
 

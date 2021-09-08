@@ -4,7 +4,7 @@ module "portal-client" {
   namespace = "nimrod-portal"
 
   allowed_cors_patterns = local.frontend_cors
-  app                   = "portal-client"
+  app                   = "${var.app}-client"
   context_path          = "/client"
 
   db_username = "portal_client"

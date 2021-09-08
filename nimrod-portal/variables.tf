@@ -2,6 +2,10 @@ variable "namespace" {
 
 }
 
+variable "app" {
+  description = "k8s \"app\" label"
+}
+
 variable "db_root_password" {
   description = "Postgres database root password"
 }
