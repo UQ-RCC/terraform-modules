@@ -9,7 +9,7 @@ module "portal-db" {
   namespace   = var.namespace
   volume_size = "1Gi"
   password    = var.db_root_password
-  app_label   = "portal-db"
+  app_label   = "${var.app}-db"
 
   ensure_users = {
     portal_client = {
