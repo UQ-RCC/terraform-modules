@@ -24,7 +24,7 @@ resource "kubernetes_role" "admin" {
 
   rule {
     api_groups = concat(
-      ["", "apps", "autoscaling", "batch", "networking.k8s.io", "cert-manager.io"],
+      ["", "apps", "autoscaling", "batch", "networking.k8s.io", "rbac.authorization.k8s.io", "cert-manager.io"],
       var.extra_api_groups
     )
     resources  = ["*"]
