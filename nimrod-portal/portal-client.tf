@@ -6,6 +6,7 @@ module "portal-client" {
   allowed_cors_patterns = local.frontend_cors
   app                   = "${var.app}-client"
   context_path          = "/client"
+  image                 = var.client_image
 
   db_username = "portal_client"
   db_password = random_password.client-password.result
