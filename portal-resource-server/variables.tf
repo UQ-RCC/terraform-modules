@@ -3,7 +3,7 @@ variable "namespace" {
 }
 
 variable "image" {
-  default     = "uqrcc/portal-resource-server:1.0.11"
+  default     = "uqrcc/portal-resource-server:1.0.12"
   description = "portal-resource-server docker image"
 }
 
