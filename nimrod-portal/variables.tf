@@ -11,12 +11,12 @@ variable "db_root_password" {
 }
 
 variable "client_image" {
-  default     = "uqrcc/portal-client:1.0.7"
+  default     = "uqrcc/portal-client:1.0.8"
   description = "portal-client docker image"
 }
 
 variable "rs_image" {
-  default     = "uqrcc/portal-resource-server:1.0.11"
+  default     = "uqrcc/portal-resource-server:1.0.12"
   description = "portal-resource-server docker image"
 }
 
