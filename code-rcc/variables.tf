@@ -59,17 +59,13 @@ variable "postgres_password" {
 }
 
 variable "domain" {
-  default     = "code.rcc.uq.edu.au"
-  description = "Domain"
-}
+  type = object({
+    domain      = string
+    issuer_name = string
+    issuer_kind = string
+  })
 
-variable "issuer_name" {
-  description = "cert-manager issuer name"
-}
-
-variable "issuer_kind" {
-  default     = "ClusterIssuer"
-  description = "cert-manager issuer kind (Issuer, ClusterIssuer)"
+  description = "Domain info"
 }
 
 variable "ldap_uq_staff_search_base" {

@@ -29,11 +29,6 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = ">= 2.2.0"
     }
-
-    dns = {
-      source  = "hashicorp/dns"
-      version = ">= 1.3.0"
-    }
   }
 }
 
@@ -124,8 +119,8 @@ resource "kubernetes_persistent_volume_claim" "gitea-data" {
 locals {
   app_ini = templatefile("${path.module}/app.ini", {
     app_name          = var.app_name
-    domain            = var.domain
-    root_url          = "https://${var.domain}"
+    domain            = var.domain.domain
+    root_url          = "https://${var.domain.domain}"
     secret_key        = var.secret_key
     internal_token    = var.internal_token
     #mail_from         = var.mail_from
@@ -376,7 +371,7 @@ resource "kubernetes_service" "gitea" {
     name      = "gitea"
     namespace = var.namespace
     annotations = {
-      "external-dns.alpha.kubernetes.io/hostname" = var.domain
+      "external-dns.alpha.kubernetes.io/hostname" = var.domain.domain
     }
   }
 
@@ -424,10 +419,10 @@ resource "kubectl_manifest" "certificate" {
     spec = {
       secretName = "gitea-certificate"
       issuerRef = {
-        name = var.issuer_name
-        kind = var.issuer_kind
+        name = var.domain.issuer_name
+        kind = var.domain.issuer_kind
       }
-      dnsNames = [var.domain]
+      dnsNames = [var.domain.domain]
     }
   })
 }
