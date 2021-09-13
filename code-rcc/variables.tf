@@ -2,6 +2,10 @@ variable "namespace" {
   description = "Kubernetes namespace"
 }
 
+variable "app_label" {
+  description = "k8s \"app\" label"
+}
+
 variable "app_name" {
   default     = "code.rcc"
   description = "Name of the gitea instance"

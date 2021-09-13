@@ -32,13 +32,13 @@ terraform {
   }
 }
 
-module "gitea-db" {
+module "db" {
   source = "../postgres"
 
   namespace   = var.namespace
   volume_size = "1Gi"
   password    = var.postgres_password
-  app_label   = "gitea-db"
+  app_label   = "${var.app_label}-db"
 
   ensure_users = {
     (var.postgres_username) = {
@@ -52,55 +52,9 @@ module "gitea-db" {
   }
 }
 
-resource "kubernetes_network_policy" "gitea-db-network-policy" {
+resource "kubernetes_persistent_volume_claim" "data" {
   metadata {
-    name      = "gitea-db-network-policy"
-    namespace = var.namespace
-  }
-
-  spec {
-    pod_selector {
-      match_labels = {
-        "app" = "gitea-db"
-      }
-    }
-
-    policy_types = ["Ingress", "Egress"]
-    ingress {
-      from {
-        pod_selector {
-          match_labels = {
-            "app" = "gitea"
-          }
-        }
-      }
-
-      ports {
-        protocol = "TCP"
-        port     = "5432"
-      }
-    }
-
-    egress {
-      to {
-        pod_selector {
-          match_labels = {
-            "app" = "gitea"
-          }
-        }
-      }
-
-      ports {
-        protocol = "TCP"
-        port     = "5432"
-      }
-    }
-  }
-}
-
-resource "kubernetes_persistent_volume_claim" "gitea-data" {
-  metadata {
-    name      = "gitea-data"
+    name      = "${var.app_label}-data"
     namespace = var.namespace
   }
 
@@ -130,14 +84,15 @@ locals {
     run_mode          = var.run_mode
     app_data_path     = "/var/lib/gitea/gitea"
     git_data_path     = "/var/lib/gitea/git"
+    postgres_host     = module.db.service_name
     postgres_username = var.postgres_username
     postgres_password = var.postgres_password
   })
 }
 
-resource "kubernetes_secret" "gitea-config" {
+resource "kubernetes_secret" "config" {
   metadata {
-    name      = "gitea-config"
+    name      = "${var.app_label}-config"
     namespace = var.namespace
   }
 
@@ -147,9 +102,9 @@ resource "kubernetes_secret" "gitea-config" {
   }
 }
 
-resource "kubernetes_secret" "gitea-ldap" {
+resource "kubernetes_secret" "ldap" {
   metadata {
-    name      = "gitea-ldap"
+    name      = "${var.app_label}-ldap"
     namespace = var.namespace
   }
 
@@ -160,9 +115,9 @@ resource "kubernetes_secret" "gitea-ldap" {
   }
 }
 
-resource "kubernetes_secret" "gitea-admin" {
+resource "kubernetes_secret" "admin" {
   metadata {
-    name      = "gitea-admin"
+    name      = "${var.app_label}-admin"
     namespace = var.namespace
   }
 
@@ -174,7 +129,7 @@ resource "kubernetes_secret" "gitea-admin" {
 
 resource "kubernetes_deployment" "gitea" {
   metadata {
-    name      = "gitea"
+    name      = var.app_label
     namespace = var.namespace
   }
 
@@ -183,7 +138,7 @@ resource "kubernetes_deployment" "gitea" {
   spec {
     selector {
       match_labels = {
-        app = "gitea"
+        app = var.app_label
       }
     }
 
@@ -200,7 +155,7 @@ resource "kubernetes_deployment" "gitea" {
     template {
       metadata {
         labels = {
-          app = "gitea"
+          app = var.app_label
         }
 
         annotations = {
@@ -217,22 +172,22 @@ resource "kubernetes_deployment" "gitea" {
         }
 
         volume {
-          name = "gitea-data"
+          name = "data"
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.gitea-data.metadata.0.name
+            claim_name = kubernetes_persistent_volume_claim.data.metadata.0.name
           }
         }
 
         volume {
-          name = "gitea-config"
+          name = "config"
           secret {
-            secret_name = kubernetes_secret.gitea-config.metadata[0].name
+            secret_name = kubernetes_secret.config.metadata[0].name
           }
         }
 
         volume {
-          name = "gitea-tls"
-          secret { secret_name = "gitea-certificate" }
+          name = "tls"
+          secret { secret_name = "${var.app_label}-certificate" }
         }
 
         init_container {
@@ -255,7 +210,7 @@ resource "kubernetes_deployment" "gitea" {
             name = "GITEA_ADMIN_PASSWORD"
             value_from {
               secret_key_ref {
-                name = kubernetes_secret.gitea-admin.metadata[0].name
+                name = kubernetes_secret.admin.metadata[0].name
                 key  = "password"
               }
             }
@@ -270,7 +225,7 @@ resource "kubernetes_deployment" "gitea" {
             name  = "GITEA_LDAP_USER"
             value_from {
               secret_key_ref {
-                name = kubernetes_secret.gitea-ldap.metadata[0].name
+                name = kubernetes_secret.ldap.metadata[0].name
                 key  = "ldap_bind_dn"
               }
             }
@@ -280,7 +235,7 @@ resource "kubernetes_deployment" "gitea" {
             name  = "GITEA_LDAP_PASSWORD"
             value_from {
               secret_key_ref {
-                name = kubernetes_secret.gitea-ldap.metadata[0].name
+                name = kubernetes_secret.ldap.metadata[0].name
                 key  = "ldap_bind_password"
               }
             }
@@ -308,13 +263,13 @@ resource "kubernetes_deployment" "gitea" {
 
           volume_mount {
             mount_path = "/etc/gitea"
-            name       = "gitea-config"
+            name       = "config"
             read_only  = true
           }
 
           volume_mount {
             mount_path = "/var/lib/gitea"
-            name       = "gitea-data"
+            name       = "data"
             read_only  = false
           }
 
@@ -334,19 +289,19 @@ resource "kubernetes_deployment" "gitea" {
 
           volume_mount {
             mount_path = "/etc/gitea"
-            name       = "gitea-config"
+            name       = "config"
             read_only  = true
           }
 
           volume_mount {
             mount_path = "/var/lib/gitea"
-            name       = "gitea-data"
+            name       = "data"
             read_only  = false
           }
 
           volume_mount {
             mount_path = "/tls"
-            name       = "gitea-tls"
+            name       = "tls"
             read_only  = true
           }
 
@@ -368,7 +323,7 @@ resource "kubernetes_deployment" "gitea" {
 
 resource "kubernetes_service" "gitea" {
   metadata {
-    name      = "gitea"
+    name      = var.app_label
     namespace = var.namespace
     annotations = {
       "external-dns.alpha.kubernetes.io/hostname" = var.domain.domain
@@ -379,27 +334,27 @@ resource "kubernetes_service" "gitea" {
 
   spec {
     selector = {
-      app = "gitea"
+      app = var.app_label
     }
     type             = "LoadBalancer"
     session_affinity = "ClientIP"
 
     port {
-      name        = "gitea-http"
+      name        = "http"
       port        = 80
       target_port = 3080
       protocol    = "TCP"
     }
 
     port {
-      name        = "gitea-https"
+      name        = "https"
       port        = 443
       target_port = 3443
       protocol    = "TCP"
     }
 
     port {
-      name        = "gitea-ssh"
+      name        = "ssh"
       port        = 22
       target_port = 2222
       protocol    = "TCP"
@@ -413,11 +368,11 @@ resource "kubectl_manifest" "certificate" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
     metadata   = {
-      name      = "gitea-certificate"
+      name      = "${var.app_label}-certificate"
       namespace = var.namespace
     }
     spec = {
-      secretName = "gitea-certificate"
+      secretName = "${var.app_label}-certificate"
       issuerRef = {
         name = var.domain.issuer_name
         kind = var.domain.issuer_kind
