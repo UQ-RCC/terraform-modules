@@ -381,3 +381,34 @@ resource "kubectl_manifest" "certificate" {
     }
   })
 }
+
+
+
+resource "kubernetes_network_policy" "db-network-policy" {
+  metadata {
+    name      = "${var.app_label}-gitea-to-db"
+    namespace = var.namespace
+  }
+
+  spec {
+    pod_selector {
+      match_labels = { "app" = "${var.app_label}-db" }
+    }
+
+    policy_types = ["Ingress"]
+    ingress {
+      from {
+        pod_selector {
+          match_labels = {
+            "app" = var.app_label
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "5432"
+      }
+    }
+  }
+}
