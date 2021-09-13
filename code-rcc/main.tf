@@ -218,7 +218,7 @@ resource "kubernetes_deployment" "gitea" {
 
           env {
             name  = "GITEA_LDAP_HOST"
-            value = "ad1.cc.uq.edu.au"
+            value = var.ldap_host
           }
 
           env {

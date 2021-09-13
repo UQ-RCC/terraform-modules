@@ -46,6 +46,10 @@ variable "init_image" {
   description = "Docker image used for init containers"
 }
 
+variable "ldap_host" {
+  description = "UQ AD Host"
+}
+
 variable "ldap_bind_dn" {
   description = "UQ AD Bind DN"
 }
