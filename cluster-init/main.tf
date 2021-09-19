@@ -38,5 +38,11 @@ resource "helm_release" "nginx-ingress" {
     rbac = {
       create = true
     }
+
+    controller = {
+      config = {
+        proxy-buffer-size = "16k"
+      }
+    }
   })]
 }
